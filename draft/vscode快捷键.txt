@@ -1,0 +1,3 @@
+ctrl+shift+p    打开主命令框
+ctrl+p v        打开markdown预览
+（英文模式下先按ctrl+p，松开手，按v）

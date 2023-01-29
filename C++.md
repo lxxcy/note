@@ -4649,3 +4649,206 @@ int main() {
 通过multimap进行信息的插入key（部门编号）value（员工）
 分部门显示员工信息
 
+自己给出的方案：
+```c++
+#include <iostream>
+using namespace std;
+#include <map>
+#include <vector>
+#include<string>
+#include<ctime>
+
+class Staf {
+public:
+	/*Staf(string name, int salary)
+	{
+		this->name = name;
+		this->salary = salary;
+	}*/
+	string name;
+	int salary;
+};
+
+void Creat(multimap<int, Staf>& m) {
+	//随机数种子
+	srand((unsigned int)time(NULL));
+	//创建员工并插入vector容器存储
+	Staf p1;
+	Staf p2;
+	Staf p3;
+	Staf p4;
+	Staf p5;
+	Staf p6;
+	Staf p7;
+	Staf p8;
+	Staf p9;
+	Staf p10;
+	vector<Staf> v;
+	v.push_back(p1);
+	v.push_back(p2);
+	v.push_back(p3);
+	v.push_back(p4);
+	v.push_back(p5);
+	v.push_back(p6);
+	v.push_back(p7);
+	v.push_back(p8);
+	v.push_back(p9);
+	v.push_back(p10);
+
+	//初始化姓名与工资,并插入multimap中初始化部门
+	string name = "ABCDEFGHIJ";
+	int i = 0;	//在for内部初始化迭代器后，好像不允许再在for内再初始化其他变量？
+	for (vector<Staf>::iterator it = v.begin(); it != v.end(); i++, it++)
+	{
+		it->name = name[i];
+		it->salary = rand() % 3001 + 2000;
+		m.insert(make_pair(rand() % 3 + 1,*it));
+	}
+}
+
+void ShowStaf(const multimap<int, Staf>& m)
+{
+	//选择输出部门语句
+	for (multimap<int, Staf>::const_iterator it = m.begin(); it != m.end(); it++)
+	{
+		if (it->first == 1)
+			cout << "部门：策划";
+		else if (it->first == 2)
+			cout << "部门：美术";
+		else
+			cout << "部门：研发";
+
+		cout << " 姓名：" << it->second.name
+			<< " 工资：" << it->second.salary << endl;
+	}
+}
+
+int main() {
+	//存储员工信息与部门信息，并自动排序
+	multimap<int, Staf> m;
+	//创建并初始化员工信息
+	Creat(m);
+	//显示员工信息
+	ShowStaf(m);
+
+	return 0;
+}
+```
+
+示范代码：
+```c++
+#define _CRT_SECURE_NO_WARNINGS
+#include<iostream>
+using namespace std;
+#include <vector>
+#include <string>
+#include <map>
+#include <ctime>
+
+//公司今天招聘了5个员工，5名员工进入公司之后，需要指派员工在那个部门工作
+//人员信息有: 姓名 年龄 电话 工资等组成
+//通过Multimap进行信息的插入 保存 显示
+//分部门显示员工信息 显示全部员工信息
+
+enum
+{
+	CAIWU,RENLI,MEISHU
+};
+
+class Worker
+{
+public:
+	string m_Name;//姓名
+	int m_Money; //工资
+};
+
+void createWorker(vector<Worker>&v)
+{
+	string nameSeed = "ABCDE";
+	for (int i = 0; i < 5;i++)
+	{
+		Worker worker;
+		worker.m_Name = "员工";
+		worker.m_Name += nameSeed[i];
+
+		worker.m_Money = rand() % 10000 + 10000; // 10000 ~ 19999
+		
+		v.push_back(worker);
+	}
+}
+
+void setGroup(vector<Worker>&v, multimap<int, Worker>&m)
+{
+	for (vector<Worker>::iterator it = v.begin(); it != v.end();it++)
+	{
+		//随机产生部门编号  0 1 2 
+		int id = rand() % 3;
+
+		//将员工插入到分组的容器中
+		m.insert(make_pair(id, *it));
+	}
+
+}
+
+void showWorker(multimap<int,Worker>&m)
+{
+	// 0 A   0  B   1  C   2  D  2 E
+	cout << "财务部门人员如下： " << endl;
+	multimap<int,Worker>::iterator pos = m.find(CAIWU);
+	int count = m.count(CAIWU);
+	int index = 0;
+
+	for (; pos != m.end(), index < count; pos++, index++)
+	{
+		cout << "姓名： " << pos->second.m_Name << " 工资： " << pos->second.m_Money << endl;
+	}
+
+	cout << "人力资源部门人员如下： " << endl;
+	pos = m.find(RENLI);	//利用find成员函数，查到第一个人的位置
+	count = m.count(RENLI);	//利用count成员函数，统计该key值元素的个数，控制输出人数
+	index = 0;
+
+	for (; pos != m.end(), index < count; pos++, index++)
+	{
+		cout << "姓名： " << pos->second.m_Name << " 工资： " << pos->second.m_Money << endl;
+	}
+
+
+	cout << "美术部门人员如下： " << endl;
+	pos = m.find(MEISHU);
+	count = m.count(MEISHU);
+	index = 0;
+
+	for (; pos != m.end(), index < count; pos++, index++)
+	{
+		cout << "姓名： " << pos->second.m_Name << " 工资： " << pos->second.m_Money << endl;
+	}
+}
+
+int main(){
+
+	//随机数种子
+	srand((unsigned int)time(NULL));
+
+	vector<Worker>v; //存放员工的容器
+	//员工的创建
+	createWorker(v);
+
+	//员工分组
+	multimap<int, Worker>m;
+	setGroup(v,m);
+
+	//分部门显示员工
+	showWorker(m);
+
+	//for (vector<Worker>::iterator it = v.begin(); it != v.end();it++)
+	//{
+	//	cout << "姓名： " << it->m_Name << " 工资： " << it->m_Money << endl;
+	//}
+
+	system("pause");
+	return EXIT_SUCCESS;
+}
+```
+
+
