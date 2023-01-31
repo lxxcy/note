@@ -428,8 +428,84 @@ yum：RPM包软件管理器，用于自动化安装配置linux软件，可以自
 - install，可选，安装
 - remove，可选，卸载
 - search，可选，搜索
+示例：`yum install -y ntp`
 
 Ubuntu使用`apt`命令安装软件：
 apt：DEB包软件管理器
 语法：`apt [-y] [install / remove / search] 软件名称`
+
+### systemctl命令
+linux内很多软件（内置或第三方）均支持使用systemstl命令控制启动、停止、开机自启
+能够被systemctl管理的**软件**，一般也称为**服务**
+语法：`systemctl start / stop / status /enable / disable 服务名`
+- start，启动
+- stop，关闭
+- status，查看状态
+- enable，开启开机自启
+- disable，关闭开机自启
+
+系统内置服务很多，如：
+- NetworkManager，主网络服务
+- network，副网络服务
+- firewalld，防火墙服务
+- sshd，ssh服务
+
+对于第三方软件：
+部分软件安装后会自动集成到systemctl中
+对于安装后没有自动集成到systemctl中的软件，可以手动添加
+
+### 软链接
+作用：可以将文件、文件夹链接到其他位置（类似windows系统中的快捷方式）
+语法：`ln -s 参数1 参数2`
+- -s，创建软连接
+- 参数1，被链接的文件或文件夹
+- 参数2，要链接去的目的地
+
+示例：
+`ln -s /etc/yum.comf ~/yum.conf`
+`ln -s/etc/yum ~/yum`
+
+### 日期和时区
+date命令
+作用：查看系统时间
+语法：`date [-d] [+格式化字符串]`
+- -d，可选，按照给定的字符串显示日期，一般用于日期计算
+- 格式化字符串：通过特定的字符串标记，来控制显示的日期格式
+  - %Y 年
+  - %y 年份后两位数字(00-99)
+  - %m 月份(01-12)
+  - %d 日(01-31)
+  - %H 小时(00-59)
+  - %M 分钟(00-59)
+  - %S 秒(00-60)
+  - %s 自1970-01-01 00:00:00 UTC到现在的秒数（即**时间戳**）
+
+示例：
+`date`使用date命令本体，无选项，直接查看时间
+`date +%Y-%m-%d`按照2022-01-01格式显示日期
+
+按照2022-01-01 10:00:00格式显示日期：
+`date +%Y-%m-%d %H:%M:%S`错误的格式
+`date "+%Y-%m-%d %H:%M:%S`由于中间带有空格，所以使用双引号包围格式化字符串，使之成为整体
+
+-d选项可以按照给定的字符串显示日期，一般用于日期计算（该选项可以配合格式化字符串使用）
+其中支持的时间标记为：
+- year 年
+- month 月
+- day 天
+- hour 小时
+- minute 分钟
+- second 秒
+
+示例：
+`date -d "+1 day"`
+`date -d "-3 month" +%Y-%m-%d`
+`date -d "+1 year"`
+
+修改linux时区：
+注意：需要root权限才能修改时区
+修改时区为东八时区：
+`rm -f /etc/localtime`
+`sudo li -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime`
+
 
