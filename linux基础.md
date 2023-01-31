@@ -506,6 +506,6 @@ date命令
 注意：需要root权限才能修改时区
 修改时区为东八时区：
 `rm -f /etc/localtime`
-`sudo li -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime`
+`sudo ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime`
 
 
