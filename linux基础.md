@@ -518,3 +518,5 @@ linux内很多软件（内置或第三方）均支持使用systemstl命令控制
 - `systemctl enable ntpd`
 也可以手动校准（**需要root权限**）：`ntpdate -u ntp.aliyun.com`
 
+### IP地址和主机名
+
