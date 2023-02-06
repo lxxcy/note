@@ -4851,4 +4851,706 @@ int main(){
 }
 ```
 
+## 函数对象
+重载函数调用操作符的**类**，其对象即称为**函数对象**
+函数对象使用重载的`()`时，行为类似函数调用，故也叫**仿函数**
+本质：函数对象(仿函数)是一个类，不是一个函数
+
+### 函数对象使用
+特点
+- 函数对象在使用时，可以像普通函数那样调用，可以有参数，可以有返回值
+- 函数对象超出普通函数的概念：函数对象可以有自己的状态
+- 函数对象可以作为参数传递
+
+```c++
+#include <iostream>
+using namespace std;
+#include <string>
+//函数对象/仿函数
+class NEWADD1 {
+public:
+	int operator ()(int a, int b) {
+		return a + b;
+	}
+};
+
+class NEWPRINT {
+public:
+	NEWPRINT() {
+		this->count = 0;
+	}
+	void operator ()(string str) {
+		cout << str << endl;
+		count++;
+	}
+
+	int count;
+};
+
+void doprint(NEWPRINT& p, string str) {
+	p(str);
+}
+
+//函数对象的用法和函数调用很类似，但本质上不是一个函数，而是对象
+void test1()
+{
+	NEWADD1 add;
+	cout << add(1, 2) << endl;
+}
+
+//函数对象可以有自己的属性
+void test2() {
+	NEWPRINT print;
+	print("hello c++");
+	print("hello c++"); 
+	print("hello c++");
+	cout << "调用print的次数：" << print.count << endl;
+}
+
+//函数对象可以作为参数传递
+void test3() {
+	NEWPRINT p;
+	doprint(p, "hello world!");
+}
+
+int main(void)
+{
+	test1();
+	test2();
+	test3();
+
+	return 0;
+}
+```
+
+### 谓词
+返回bool类型的**仿函数**称为**谓词**
+- 如果`operator()`接受一个参数，则称为**一元谓词**
+- 如果`operator()`接受两个参数，则称为**二元谓词**
+
+#### 一元谓词
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <algorithm>
+
+class Greaterfive {
+public:
+	bool operator()(int num)
+	{
+		return num > 5;
+	}
+};
+
+void test1()
+{
+	vector<int> v;
+	for(int i = 1; i <= 10; i++)
+	{
+		v.push_back(i);
+	}
+
+	//find_if()函数声明在<algorithm>里
+	//此次目的：找到大于5的数字
+	//Greaterfive() 是一个 "匿名函数对象" ，也可以使用一个实例化的函数对象作为参数
+	vector<int>::iterator it = find_if(v.begin(), v.end(), Greaterfive());
+	
+	if (it == v.end())
+	{
+		cout << "未找到符合条件的元素" << endl;
+	}
+	else
+	{
+		cout << "找到符合条件的元素为" << *it << endl;
+	}
+	
+}
+
+int main(void)
+{
+	test1();
+	
+	return 0;
+}
+```
+#### 二元谓词
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <algorithm>
+
+class revecompare {
+public:
+	bool operator()(int val1, int val2)
+	{
+		return val1 > val2;
+	}
+};
+
+void test1()
+{
+	vector<int> v;
+	v.push_back(10);
+	v.push_back(70);
+	v.push_back(40);
+	v.push_back(50);
+	v.push_back(80);
+
+	sort(v.begin(), v.end());
+	for (auto it = v.begin(); it != v.end(); it++)
+	{
+		cout << *it << " ";
+	}
+	cout << endl;
+
+	//sort算法默认排序规则为从小到大，且不支持自定义数据类型排序
+	//想要修改排序规则，需要借助仿函数（函数对象）作为sort的参数以使用重载的sort
+	cout << "------------reverse-------------" << endl;
+	sort(v.begin(), v.end(), revecompare());
+	for (auto it = v.begin(); it != v.end(); it++)
+	{
+		cout << *it << " ";
+	}
+}
+
+int main(void)
+{
+	test1();
+	
+	return 0;
+}
+```
+
+### 内建函数对象
+STL内建了一些函数对象
+
+分类：
+- 算术仿函数
+- 关系仿函数
+- 逻辑仿函数
+
+用法：
+- 这些仿函数所产生的对象，用法和普通函数一样
+- 使用内建函数对象，必须包含头文件`<functional>`
+
+#### 算术仿函数
+功能特点：
+- 实现四则运算
+- negate为**一元运算**，其他都是二元运算
+
+函数原型：
+- `template<class T> T plus<T>`		//加法仿函数
+- `template<class T> T minus<T>`	//减法仿函数
+- `template<class T> T multiplies<T>`//乘法仿函数
+- `template<class T> T divides<T>`	//除法仿函数
+- `template<class T> T modulus<T>`	//取模仿函数
+- `template<class T> T negate<T>`	//取反仿函数一元）
+
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <functional>
+
+void test1()
+{
+	negate<int> n;
+	cout << n(50) << endl;
+
+	plus<int> p;	
+	//注意：虽然是二元运算，但是由于不能对不同数据类型计算，故只需要写一次数据类型在模板中
+	int result = p(10, 20);
+	cout << result << endl;
+}
+
+int main(void)
+{
+	test1();
+	
+	return 0;
+}
+```
+
+#### 关系仿函数
+功能：实现关系对比(可以代替自己手写仿函数来进行对比)
+仿函数原型：
+- `template<class T> bool equal_to<T>`
+- `template<class T> bool not_equal_to<T>`
+- `template<class T> bool greater<T>`
+- `template<class T> bool greater_equal<T>`
+- `template<class T> bool less<T>`
+- `template<calss T> bool less_equal<T>`
+
+通过关系仿函数实现从大到小排序是很常用的
+
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <functional>
+#include <algorithm>
+
+void test1()
+{
+	vector<int> v;
+	v.push_back(10);
+	v.push_back(70);
+	v.push_back(40);
+	v.push_back(50);
+	v.push_back(80);
+
+	sort(v.begin(), v.end());
+	for (auto it = v.begin(); it != v.end(); it++)
+	{
+		cout << *it << " ";
+	}
+	cout << endl;
+	//sort算法默认排序规则为从小到大，且不支持自定义数据类型排序
+	//想要修改排序规则，需要借助仿函数（函数对象）作为sort的参数以使用重载的sort
+	cout << "------------reverse-------------" << endl;
+	sort(v.begin(), v.end(), greater<int>());	//使用了匿名的内建函数对象,不需要再写仿函数
+	for (auto it = v.begin(); it != v.end(); it++)
+	{
+		cout << *it << " ";
+	}
+}
+
+int main(void)
+{
+	test1();
+	
+	return 0;
+}
+```
+
+#### 逻辑仿函数
+功能：实现逻辑运算
+函数原型：
+- `template<class T> bool logical_and<T>`	//逻辑与
+- `template<class T> bool logical_or<T>`	//逻辑或
+- `templare<class T> bool logical_not<T>`	//逻辑非
+
+逻辑仿函数在实际开发中使用较少
+
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <functional>
+#include <algorithm>
+
+void test1()
+{
+	vector<bool> v1;
+	v1.push_back(true);
+	v1.push_back(true);
+	v1.push_back(false);
+	v1.push_back(true);
+	v1.push_back(false);
+
+	for (vector<bool>::iterator it = v1.begin(); it != v1.end(); it++)
+	{
+		cout << *it << " ";
+	}
+
+	cout << endl;
+
+	//
+	vector<bool> v2;
+	v2.resize(v1.size());//修改v2大小，否则搬运将出错（因为没有为目标容器分配内存空间）
+
+	//将v的内容搬运到v2中，并执行取反操作
+	//transform函数包含于<algorithm>头文件中
+	transform(v1.begin(),v1.end(), v2.begin(), logical_not<bool>());
+	for (vector<bool>::iterator it = v2.begin(); it != v2.end(); it++)
+	{
+		cout << *it << " ";
+	}
+}
+
+int main(void)
+{
+	test1();
+	
+	return 0;
+}
+```
+
+### STL常用算法
+算法主要包含于头文件`<algorithm> <functional> <numeric> `中
+- `<algorithm>`，所有STL头文件中最大的一个，涉及比较、交换、查找、遍历、复制、修改等等
+- `<numeric>`，体积很小，只包括几个在序列上进行简单数学运算的模板函数
+- `<functional>`，定义了一些模板类，用以声明函数对象
+
+#### 常用遍历算法
+`for_each`	//遍历容器
+`transform`	//搬运容器到另一个容器中
+
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <functional>
+#include <algorithm>
+
+void print1(int val)
+{
+	cout << val << " ";
+}
+
+class print2 {
+public:
+	void operator()(int val)
+	{
+		cout << val << " ";
+	}
+};
+
+void test1()
+{
+	vector<int> v;
+	v.push_back(10);
+	v.push_back(70);
+	v.push_back(40);
+	v.push_back(50);
+	v.push_back(80);
+
+	for_each(v.begin(), v.end(), print1);	//注意，仅传入函数名，因为函数名是
+
+	cout << endl;
+	for_each(v.begin(), v.end(), print2());	//注意，print2() 为匿名函数对象(仿函数)，不是函数
+}
+
+int main(void)
+{
+	test1();
+	
+	return 0;
+}
+```
+
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <algorithm>
+
+class Transform {
+public:
+	int operator()(int val)
+	{
+		return val + 100;
+	}
+};
+
+class print {
+public:
+	void operator()(int val)
+	{
+		cout << val << " ";
+	}
+};
+
+void test1()
+{
+	vector<int> v1;
+	v1.push_back(10);
+	v1.push_back(70);
+	v1.push_back(40);
+	v1.push_back(50);
+	v1.push_back(80);
+
+	vector<int> v2;
+	v2.resize(v1.size());
+
+	transform(v1.begin(), v1.end(), v2.begin(),Transform());	
+	//第四个参数可触发重载版本的transform，该参数为一个函数或函数模板
+	//在其内部可进行运算，并将结果将到目标容器中
+
+	for_each(v2.begin(), v2.end(), print());
+}
+
+int main(void)
+{
+	test1();
+	
+	return 0;
+}
+```
+
+#### 常用查找算法
+- `find`			//查找元素
+- `find_if`			//按条件查找元素
+- `addjacent_find`	//查找相邻重复元素
+- `binary_search`	//二分查找法
+- `count`			//统计元素个数
+- `count_if`		//按条件统计元素个数
+
+> find
+
+功能：查找指定元素，找到返回指定元素的迭代器，找不到则返回结束迭代器
+
+函数原型：
+`find(iterator beg,iterator end,value);`
+- beg开始迭代器
+- end结束迭代器
+- value查找的元素
+
+注意：
+- 对于自定义数据类型，需要重载`==`
+- 无论是否查找成功，都会返回**迭代器**
+
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <algorithm>
+#include <string>
+
+class Person {
+public:
+	Person(int age, string name) {
+		this->age = age;
+		this->name = name;
+	}
+
+	int age;
+	string name;
+};
+
+void test1()
+{
+	vector<int> v1;
+	v1.push_back(10);
+	v1.push_back(70);
+	v1.push_back(40);
+	v1.push_back(50);
+	v1.push_back(80);
+
+	auto it = find(v1.begin(), v1.end(), 20);
+	if (it == v1.end())
+	{
+		cout << "未找到相应数据" << endl;
+	}
+	else
+	{
+		cout << "找到数据：" << *it << endl;
+	}
+}
+
+bool operator==(Person p1, Person p2) {
+	return p1.name == p2.name && p1.age == p2.age;
+}
+
+void test2() {
+	vector<Person> v;
+
+	Person p1(10, "aaa");
+	Person p2(20, "bbb");
+	Person p3(30, "ccc");
+	Person p4(40, "ddd");
+	v.push_back(p1);
+	v.push_back(p2);
+	v.push_back(p3);
+	v.push_back(p4);
+
+	vector<Person>::iterator it = find(v.begin(), v.end(), p3);
+	if (it == v.end())
+	{
+		cout << "未找到相应数据" << endl;
+	}
+	else
+	{
+		cout << "找到数据：" << (*it).name << " " << it->age << endl;
+	}
+}
+
+int main(void)
+{
+	test1();
+	test2();
+
+	return 0;
+}
+```
+
+> find_if
+
+功能：按条件查找元素，找到则返回指定位置迭代器，找不到则返回结束迭代器
+函数原型：
+`find_if(iterator beg,iterator end,_Pred);`
+- beg开始迭代器
+- end结束迭代器
+- _Pred函数或者谓词（返回bool类型的仿函数）
+
+注意：
+- 无论查找是否成功，都返回迭代器
+- 无论是内置数据类型还是自定义数据类型，都需要提供函数或谓词以确定查找规则
+
+Tips:
+1. 使用引用或指针时（为了加快执行速度），如果函数不应对原参数修改，应加**const**限定
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <algorithm>
+#include <string>
+
+class Person {
+public:
+	Person(int age, string name) {
+		this->age = age;
+		this->name = name;
+	}
+
+	int age;
+	string name;
+};
+
+class GreaterFifty {
+public:
+	bool operator()(const int &val) {//注意：使用引用或指针时，如果函数不应对原参数修改，应加const限定
+		return val > 50;
+	}
+};
+
+void test1()
+{
+	vector<int> v1;
+	v1.push_back(10);
+	v1.push_back(70);
+	v1.push_back(40);
+	v1.push_back(50);
+	v1.push_back(80);
+
+	//查找内置数据类型
+	auto it = find_if(v1.begin(), v1.end(), GreaterFifty());
+	if (it == v1.end())
+	{
+		cout << "未找到相应数据" << endl;
+	}
+	else
+	{
+		cout << "找到数据：" << *it << endl;
+	}
+}
+
+class GreaterAgeTwenty {
+public:
+	bool operator()(const Person& p) {
+		return p.age > 20;
+	}
+};
+
+void test2() {
+	vector<Person> v;
+
+	Person p1(10, "aaa");
+	Person p2(20, "bbb");
+	Person p3(30, "ccc");
+	Person p4(40, "ddd");
+	v.push_back(p1);
+	v.push_back(p2);
+	v.push_back(p3);
+	v.push_back(p4);
+
+	//查找自定义数据类型
+	vector<Person>::iterator it = find_if(v.begin(), v.end(), GreaterAgeTwenty());
+	if (it == v.end())
+	{
+		cout << "未找到相应数据" << endl;
+	}
+	else
+	{
+		cout << "找到数据：" << (*it).name << " " << it->age << endl;
+	}
+}
+
+int main(void)
+{
+	test1();
+	test2();
+
+	return 0;
+}
+```
+
+> adjacnt_find
+
+功能：查找**相邻**、**重复**的元素，查找到则返回第一个元素的迭代器，否则返回结束迭代器
+函数原型：
+`adjacent_find(iterator beg,iterator end);`
+- beg开始迭代器
+- end结束迭代器
+
+> binary_search
+
+功能：查找指定元素是否存在
+函数原型：
+`bool binary_search(iterator beg,iterator end,valve)`
+- beg开始迭代器 
+- end结束迭代器
+- value查找的元素
+
+注意：
+- 二分查找法效率很高，但是要求查找的容器中元素序列必须**有序**
+- 返回bool类型，而不是迭代器
+- 只能确定元素是否存在，无法确定其位置
+
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <algorithm>
+#include <string>
+
+void test1()
+{
+	vector<int> v1;
+	for (int i = 0; i < 10; i++) {
+		v1.push_back(10 * i);
+	}
+
+	//二分查找法，要求查找容器中元素必须有序！
+	bool result = binary_search(v1.begin(), v1.end(), 50);
+	if (result)
+	{
+		cout << "找到数据" << endl;
+	}
+	else
+	{
+		cout << "未找到数据" <<endl;
+	}
+}
+
+int main(void)
+{
+	test1();
+	
+	return 0;
+}
+```
+
+> count
+
+功能：统计元素个数，返回int类型
+函数原型：
+`count(iterator beg,iterator end,value);`
+- beg开始迭代器
+- end结束迭代器
+- value要统计的元素
+
+注意：统计自定义数据类型是，需要配合重载`operator==`
+
+> count_if
+
+功能：按条件统计元素个数
+函数原型：
+`count_if(iterator beg,iterator end,_Pred);`
+- beg开始迭代器
+- end结束迭代器
+- _Pred谓词
+
 
