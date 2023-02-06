@@ -5264,6 +5264,7 @@ void test1()
 
 	vector<int> v2;
 	v2.resize(v1.size());
+	//注意目标容器需要开辟空间
 
 	transform(v1.begin(), v1.end(), v2.begin(),Transform());	
 	//第四个参数可触发重载版本的transform，该参数为一个函数或函数模板
@@ -5542,7 +5543,7 @@ int main(void)
 - end结束迭代器
 - value要统计的元素
 
-注意：统计自定义数据类型是，需要配合重载`operator==`
+注意：统计**自定义数据类型**时，需要配合重载`operator==`
 
 > count_if
 
@@ -5553,4 +5554,255 @@ int main(void)
 - end结束迭代器
 - _Pred谓词
 
+注意：需要使用谓词，来对条件进行判断
+
+#### 常用排序算法
+- `sort`			//对容器内元素进行排序
+- `random_shuffle`	//洗牌，指定范围内的元素随机调整次序
+- `merge`			//容器元素合并，并存储到另一容器中
+- `reverse`			//反转指定范围的元素
+
+> sort
+
+功能：对容器内元素进行排序，不写谓词则默认**升序排列**（从小到大）
+函数原型：
+`sort(iterator beg,iterator end);`
+`sort(iterator beg,iterator end,_Pred);`
+- beg 开始迭代器
+- end 结束迭代器
+- _Pred 谓词（**选填**，是一个重载版本）
+
+注意：sort算法属于开发中最常用的算法之一，必须熟练掌握
+
+> random_shuffle
+
+功能：洗牌，将指定范围内的元素随机调整次序
+函数原型：
+`random_shuffle(iterator beg,iterator end);`
+- beg 开始迭代器
+- end 结束迭代器
+
+注意：该函数若要实现真正随机，仍需要在主函数中提供**随机数种子**`srand((usigned int)time(NULL));`
+
+> merge
+
+功能：将两个容器元素合并，并存储到另一容器中
+函数原型：
+`merge(iterator beg1,iterator end1,iterator beg2,iteratro end2,iterator dest);`
+- beg1 容器1的开始迭代器
+- end1 容器1的结束迭代器
+- beg2 容器2的开始迭代器
+- end2 容器2的结束迭代器
+- dest 目标容器的开始迭代器
+
+注意：目标容器需要提前开辟空间
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <algorithm>
+
+class Print {
+public:
+	void operator()(int val)	//注意普通仿函数和谓词的区别
+								//仿函数和谓词都要求通过operator重载()运算符
+								//但谓词要求返回bool类型  即谓词属于仿函数
+	{
+		cout << val << " ";
+	}
+};
+
+void test1()
+{
+	vector<int> v1;
+	vector<int> v2;
+
+	for (int i = 0; i < 10; i++)
+	{
+		v1.push_back(i);
+	}
+	for (int i = 100; i < 110; i++)
+	{
+		v2.push_back(i);
+	}
+	
+	vector<int> TargetV;
+	TargetV.resize(v1.size() + v2.size());
+	//为目标容器开辟空间，否则将导致出错
+
+	merge(v1.begin(), v1.end(), v2.begin(), v2.end(), TargetV.begin());
+	for_each(TargetV.begin(), TargetV.end(), Print());
+
+}
+
+void test2() {
+	
+}
+
+int main(void)
+{
+	test1();
+	test2();
+
+	return 0;
+}
+```
+
+> reverse
+
+功能：将容器内的元素进行反转
+函数原型：
+`reverse(iterator beg,iteratro end);`
+- beg 开始迭代器
+- end 结束迭代器
+
+注意：
+`reverse`为`<algorithm>`内的**反转算法**
+`reserve`为`vector`容器中的**预留空间成员函数**
+
+#### 常用拷贝、替换算法
+- `copy`		//容器内指定范围的元素拷贝到另一容器中
+- `repalce`		//将容器内指定范围的旧元素修改为新元素
+- `replace_if`	//容器内指定范围满足条件的元素替换为新元素
+- `swap`		//互换两个容器的元素
+
+> copy
+
+功能：容器内指定范围的元素拷贝到另一容器中
+函数原型：
+`copy(iterator beg,iterator end,iterator dest);`
+- beg 开始迭代器
+- end 结束迭代器
+- dest 目标起始迭代器
+
+注意：目标容器需要先开辟空间
+
+> replace
+
+功能：将容器内制定范围的旧元素修改为新元素
+函数原型：
+`replace(iterator beg,iterator end,oldvalue,newvalue);`
+- beg 开始迭代器
+- end 结束迭代器
+- oldvalue 旧元素
+- newvalue 新元素
+
+注意：replace会替换掉容器中**所有**的oldvalue
+
+> replace_if
+
+功能：将区间内满足条件的元素，替换成指定元素
+函数原型：
+`replace_if(iterator beg,iterator end,_Pred,newvalue);`
+- beg 开始迭代器
+- end 结束迭代器
+- _Pred 谓词
+- newvalue 替换的新元素
+
+该函数利用仿函数，灵活筛选满足的条件
+
+> swap
+
+功能：互换两个容器，交换的容器要**同种类型**
+函数原型：
+`swap(constainer c1,container c2);`
+- c1 容器1
+- c2 容器2
+
+注意：**不允许**互换两个**不同类型**的容器
+
+#### 常用算术生成算法
+注意：算术生成算法属于小型算法，使用时应包含头文件`#include <numeric>`
+- `accumulate`	//计算容器元素累计总和
+- `fill`		//向容器中添加元素
+
+> accumulate
+
+功能：计算区间内，容器元素累计总和
+函数原型：
+`accumulate(iterator beg,iterator end,value);`
+- beg 开始迭代器
+- end 结束迭代器
+- value 起始值
+
+> fill
+
+功能：向容器中填充指定的元素，对于**后期填充**的作用更大
+函数原型：
+`fill(iteratro beg,iterator end,value);`
+- beg 开始迭代器
+- end 结束迭代器
+- value 填充的值
+
+#### 常用集合算法
+- `set_itersection`	//求两个容器的交集
+- `set_union`		//求两个容器的并集
+- `set_difference`	//求两个容器的差集
+
+> set_intersection
+
+功能：求两个容器的交集
+函数原型：
+`set_intersection(iterator beg1,iterator end1,iterator beg2,iterator end2,iterator dest);`
+- beg1 容器1的起始迭代器
+- end1 容器1的结束迭代器
+- beg2 容器2的起始迭代器
+- end2 容器2的结束迭代器
+- dest 目标容器开始迭代器
+
+注意：
+1. 求交集的两个集合必须是**有序序列**
+2. 目标容器开辟空间需要从**两个容器中取最小值**
+3. set_intersection返回值时交集中**最后一个元素的位置（即最后一个元素的迭代器）**
+```c++
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <algorithm>
+
+void Print(int val)
+{
+	cout << val << " ";
+}
+
+void test1()
+{
+	vector<int> v1;
+	vector<int> v2;
+	for (int i = 0; i < 10; i++)
+	{
+		v1.push_back(i);
+		v2.push_back(i + 5);
+	}
+	v2.push_back(16);
+	v2.push_back(17);
+	//v2.push_back(11);	//加入此行代码将出错
+						//特别注意，set_intersection要求两容器中元素是有序的，否则将出错
+
+	vector<int> TargetV;
+	//必须为目标容器开辟空间,经分析，需要的空间最大为较小容器的大小
+	TargetV.resize(min(v1.size(), v2.size()));	//min函数返回参数中的最小值
+
+	//set_intersection函数返回交集末尾元素的迭代器
+	auto End=set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(), TargetV.begin());
+
+	//注意：遍历时，结束迭代器需要由set_intersection提供，因为遍历到TargetV.end()是特殊情况才达到的交集长度
+	for_each(TargetV.begin(), TargetV.end(), Print);
+	cout << endl;
+	for_each(TargetV.begin(), End, Print);
+
+}
+
+void test2() {
+	
+}
+
+int main(void)
+{
+	test1();
+	test2();
+
+	return 0;
+}
+```
 
