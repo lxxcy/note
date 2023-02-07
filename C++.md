@@ -5734,7 +5734,7 @@ int main(void)
 - end 结束迭代器
 - value 填充的值
 
-#### 常用集合算法
+#### 常用集合算法{# C++核心编程}
 - `set_itersection`	//求两个容器的交集
 - `set_union`		//求两个容器的并集
 - `set_difference`	//求两个容器的差集
@@ -5806,3 +5806,8 @@ int main(void)
 }
 ```
 
+> set_union
+
+功能：  
+函数原型：<br>
+`set_union
