@@ -519,4 +519,42 @@ linux内很多软件（内置或第三方）均支持使用systemstl命令控制
 也可以手动校准（**需要root权限**）：`ntpdate -u ntp.aliyun.com`
 
 ### IP地址和主机名
+IP地址：
+- v4版本
+- v6版本
+
+查看方式：`ipconfig`
+
+特殊IP：
+- `127.0.0.1`，指代本机
+- `0.0.0.0`
+  - 可用于指代本机
+  - 可在端口绑定中用来确定绑定关系
+  - 在一下IP地址限制中，表示所有IP，如放行规则设置为0.0.0.0，表示允许任意IP访问
+
+主机名：每一台电脑除了对外联络地址(IP地址)以外，也可以有一个名字，称主机名  
+查看主机名：`hostname`  
+修改主机名（需要root权限）：`hostnamectl set-hostname`  
+
+域名解析：
+1. 先查看本机的记录
+   - Windows查看：`C:\Windows\System32\drivers\etc\hosts`
+   - Linux查看：`/etc/hosts`
+2. 本机没有，在联网查看DNS服务器
+
+配置主机名映射：
+- Windows系统：
+  1. 管理员运行记事本
+  2. 打开hosts文件
+  3. 配置格式：另起一行，输入`192.168.14.3 centos`
+
+### 配置Linux固定IP地址
+为什么要配置固定IP：  
+当前虚拟机linux的IP是通过DHCP服务获得的，可能导致每次重启后IP地址频繁变更
+- 远程连接修改适配很麻烦
+- 更新IP与主机名的映射很麻烦
+
+![](image/配置固定IP-1.jpg)
+![](image/配置固定IP-2.jpg)
+![](image/配置固定IP-3.jpg)
 
